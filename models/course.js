@@ -6,19 +6,27 @@ module.exports = (sequelize) => {
   Course.init({
     title: {
       type: Sequelize.STRING,
+      allowNull:false,
       validate: {
           notEmpty: {
               msg: '"Title" is required'
-            }
+            },
+          notNull: {
+            msg: '"Title" is required'
+          }
   
       }
     },
     description: {
       type: Sequelize.TEXT,
+      allowNull:false,
       validate: {
           notEmpty: {
               msg: '"Description" is required'
-            }
+            },
+          notNull: {
+            msg: '"Description" is required'
+          }
   
       }},
     estimatedTime: Sequelize.STRING,
@@ -30,6 +38,11 @@ module.exports = (sequelize) => {
       foreignKey: {
         fieldName: 'userId',
         allowNull: false,
+        validate: {
+          notNull: {
+            msg: '"UserId" is required'
+          }
+        }
       },
     });
   };

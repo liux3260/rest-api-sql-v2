@@ -6,23 +6,32 @@ module.exports = (sequelize) => {
   User.init({
     firstName: {
       type: Sequelize.STRING,
+      allowNull:false,
       validate: {
           notEmpty: {
               msg: '"First Name" is required'
-            }
+            },
+          notNull: {
+            msg: '"First Name" is required'
+          }
   
       }
     },
     lastName: {
       type: Sequelize.STRING,
+      allowNull:false,
       validate: {
           notEmpty: {
               msg: '"Last Name" is required'
-            }
+            },
+          notNull: {
+            msg: '"Last Name" is required'
+          }
   
       }},
     emailAddress: {
         type: Sequelize.STRING,
+        allowNull:false,
         validate: {
             notEmpty: {
                 msg: '"Email Address" is required'
@@ -30,6 +39,9 @@ module.exports = (sequelize) => {
             isEmail:{
               msg: 'Please provide a valid email address'
             },
+            notNull: {
+              msg: '"Email Address" is required'
+            }
   
         },
         unique:{
@@ -38,10 +50,14 @@ module.exports = (sequelize) => {
       },
     password:{
         type: Sequelize.STRING,
+        allowNull:false,
         validate: {
             notEmpty: {
                 msg: '"Password" is required'
-              }
+              },
+            notNull: {
+              msg: '"Password" is required'
+            }
     
         }},
   }, { sequelize });
@@ -51,6 +67,11 @@ module.exports = (sequelize) => {
       foreignKey: {
         fieldName: 'userId',
         allowNull: false,
+        validate: {
+          notNull: {
+            msg: '"UserId" is required'
+          }
+        }
       },
     });
   };

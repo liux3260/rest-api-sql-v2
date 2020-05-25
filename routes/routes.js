@@ -1,6 +1,4 @@
 const express = require('express');
-//const User = require('../models').User;
-//const Course = require('../models').Course;
 const router= express.Router();
 const Sequelize = require('sequelize');
 const { check, validationResult } = require('express-validator');
@@ -24,7 +22,6 @@ function asyncHandler(cb){
 
   const authenticateUser = async (req, res, next) => {
     let message = null;
-    // TODO
     const credentials = auth(req);
     //console.log(credentials);
     // If the user's credentials are available...
@@ -104,26 +101,19 @@ router.post('/users',asyncHandler(async (req,res)=>{
     //console.log(req.body);
     try{
         const newUser = req.body;
-        //console.log(newUser.password);
         if(newUser && newUser.password){
           newUser.password = bcryptjs.hashSync(newUser.password);
-
-          user = await User.create(newUser);
-          res.status(201).end();
-
         }
-        else{
-          const error = new Error("Incomplete Data.");
-          error.name = "SequelizeValidationError";
-          throw error;
-        }
+        user = await User.create(newUser);
+        res.location('/');
+        res.status(201).end();
     }
     catch(error){
         if(error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError"){
             user = await User.build(req.body);
             user.id = req.params.id;
-            console.log(error);
-            res.status(400).json({errors: error.message} );
+            const errorMessages = error.message.split("\n");
+            res.status(400).json({errors: errorMessages} );
             next();
         }
         else{
@@ -178,6 +168,7 @@ router.post('/courses',authenticateUser,asyncHandler(async (req,res)=>{
                 },
               ],
         });
+        res.location('/api/courses/'+course.id);
         res.status(201).end();
     }
     catch(error){
@@ -186,7 +177,8 @@ router.post('/courses',authenticateUser,asyncHandler(async (req,res)=>{
             course = await Course.build(req.body);
             course.id = req.params.id;
             //const errorMessages = error.array().map(error => error.msg);
-            res.status(400).json({ errors: error.message });
+            const errorMessages = error.message.split("\n");
+            res.status(400).json({ errors: errorMessages });
             next();
         }
         else{
@@ -208,11 +200,15 @@ router.put('/courses/:id',authenticateUser,asyncHandler(async (req,res)=>{
         if(course){
           const user = req.currentUser;
           if(user.emailAddress === course.User.emailAddress){
-            await course.update(req.body);
+            const newCourse ={  };
+            for( let key in Course.rawAttributes ){
+              newCourse[key] = req.body.key? req.body.key:null;
+            }
+            await course.update(newCourse);
             res.status(204).end();
           }
           else{
-            res.sendStatus(403);
+            res.status(403).send("Unable to update course. Please make sure you own this course");
           }
         }
         else{
@@ -227,7 +223,8 @@ router.put('/courses/:id',authenticateUser,asyncHandler(async (req,res)=>{
             course = await Course.build(req.body);
             course.id = req.params.id;
             //const errorMessages = error.array().map(error => error.msg);
-            res.status(400).json({ errors: error.message });
+            const errorMessages = error.message.split("\n");
+            res.status(400).json({ errors: errorMessages });
             next();
         }
         else{
@@ -247,8 +244,6 @@ router.delete('/courses/:id',authenticateUser,asyncHandler(async (req,res)=>{
             ],
           });
         const user = req.currentUser;
-        //console.log(user.emailAddress);
-        //console.log(course.User.emailAddress);
         if(user.emailAddress === course.User.emailAddress){
           //console.log(users.map(user => user.get({ plain: true })));
           await course.destroy();
@@ -256,10 +251,7 @@ router.delete('/courses/:id',authenticateUser,asyncHandler(async (req,res)=>{
         }
         else{
           //console.log("Not equal");
-          res.sendStatus(403);
-          //console.log("res.status(403)");
-          //next();
-          //console.log("next");
+          res.status(403).send("Unable to delete course. Please make sure you own this course");
         }
     }catch (error) {
         throw error;
