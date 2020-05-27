@@ -161,6 +161,7 @@ router.post('/courses',authenticateUser,asyncHandler(async (req,res)=>{
     let course;
     //console.log(req.body);
     try{
+        req.body['userId'] =req.currentUser.id;
         course = await Course.create(req.body,{
             include: [
                 {
@@ -190,6 +191,7 @@ router.post('/courses',authenticateUser,asyncHandler(async (req,res)=>{
 
 router.put('/courses/:id',authenticateUser,asyncHandler(async (req,res)=>{
     try{
+        //console.log(req.body);
         const course = await Course.findByPk(req.params.id,{
             include: [
               {
@@ -202,8 +204,14 @@ router.put('/courses/:id',authenticateUser,asyncHandler(async (req,res)=>{
           if(user.emailAddress === course.User.emailAddress){
             const newCourse ={  };
             for( let key in Course.rawAttributes ){
-              newCourse[key] = req.body.key? req.body.key:null;
+              //console.log(key);
+              //console.log(req.body[key]);
+              newCourse[key] = req.body[key]? req.body[key]:null;
             }
+            newCourse['id'] = parseInt(req.params.id);
+            //console.log(course.userId);
+            newCourse['userId'] = course.userId;
+            //console.log(newCourse);
             await course.update(newCourse);
             res.status(204).end();
           }
